@@ -1,7 +1,38 @@
 @import "tailwindcss";
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+body {
+  background-color: #edeff1;
+}
+
+.btn-search {
+  background: linear-gradient(135deg, #d1fae5 0%, #bbf7d0 100%);
+
+  color: #065f46;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 20px;
+  border-radius: 12px;
+
+  border: 1px solid #a7f3d0;
+
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-search:hover {
+  transform: scale(0.96);
+  background: linear-gradient(135deg, #a7f3d0 0%, #86efac 100%);
+}
+
+.icon-search {
+  margin-right: 8px;
+  stroke: #064e3b;
 }
