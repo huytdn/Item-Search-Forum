@@ -3,7 +3,14 @@ import { useAppContext } from "../context/AppContext";
 import logo from "../assets/image/unnamed.jpg";
 import icons from "../assets/icons/icon";
 
-const { TbMessageCircleFilled, FaBell } = icons;
+const {
+  TbMessageCircleFilled,
+  FaBell,
+  LuPlus,
+  PiNewspaperClippingFill,
+  CgProfile,
+  CgLogOut,
+} = icons;
 
 const Navbar = () => {
   const { user, setUser, navigate } = useAppContext();
@@ -16,7 +23,7 @@ const Navbar = () => {
 
   return (
     <div className="w-full bg-white shadow-">
-      <div className="flex items-center justify-between py-3 px-[250px]">
+      <div className="flex items-center justify-between py-3 lg:px-[80px] xl:px-[180px] ">
         {/* LEFT */}
         <div className="flex items-center gap-6">
           {/* LOGO */}
@@ -65,9 +72,11 @@ const Navbar = () => {
                 onClick={() => navigate("/post")}
                 className="bg-[#16a34a] hover:bg-[#15803d]
                 text-white px-6 py-2.5 rounded-lg
-                text-sm font-medium transition"
+                text-sm font-medium transition "
               >
-                + Đăng tin
+                <div className="flex justify-center items-center ">
+                  <LuPlus className="text-white mr-1" /> Đăng tin
+                </div>
               </button>
 
               {/* manage */}
@@ -76,7 +85,9 @@ const Navbar = () => {
                 className="bg-white hover:bg-[#f8fafc] hover:border-[#94a3b8] border-[#cbd5e1] border-1
                 px-6 py-2.5 rounded-lg text-sm font-medium"
               >
-                Quản lý tin
+                <div className="flex justify-center items-center">
+                  <PiNewspaperClippingFill className=" mr-1.5" /> Quản lý tin
+                </div>
               </button>
 
               {/* profile */}
@@ -103,7 +114,7 @@ const Navbar = () => {
                   {/* Hiển thị Tên bên cạnh Avatar */}
                   <div className="flex items-center gap-1">
                     <span className="text-[14px] font-medium text-gray-800 max-w-[150px] truncate">
-                      {user?.name || "B23DCAT134_..."}
+                      {user?.name || "B23DCAT134"}
                     </span>
 
                     {/* Icon Mũi tên xuống */}
@@ -132,7 +143,7 @@ const Navbar = () => {
                       onClick={() => setShowMenu(false)}
                     ></div>
 
-                    <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-xl py-2 z-20 animate-in fade-in zoom-in duration-150">
+                    <div className="absolute right-0 mt-4 w-56 bg-white border border-gray-100 rounded-xl shadow-xl py-2 z-20 animate-in fade-in zoom-in duration-200">
                       {/* Mục Trang cá nhân */}
                       <div
                         onClick={() => {
@@ -142,19 +153,7 @@ const Navbar = () => {
                         className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
                       >
                         <div className="text-gray-400">
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                            />
-                          </svg>
+                          <CgProfile className="text-xl" />
                         </div>
                         <span className="text-sm font-normal text-gray-700">
                           Trang cá nhân
@@ -172,19 +171,7 @@ const Navbar = () => {
                         className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
                       >
                         <div className="text-red-500">
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                            />
-                          </svg>
+                          <CgLogOut className="text-xl" />
                         </div>
                         <span className="text-sm font-normal text-gray-700">
                           Đăng xuất
