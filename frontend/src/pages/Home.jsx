@@ -3,6 +3,8 @@ import HeroBanner from "../components/HeroBanner";
 import PrioritySidebar from "../components/PrioritySidebar";
 import QuickSearch from "../components/QuickSearch";
 import TermsBanner from "../components/TermsBanner";
+import LatestNews from "../components/LatestNews";
+import FeatureSection from "../components/FeatureSection";
 
 const Home = () => {
   return (
@@ -22,6 +24,12 @@ const Home = () => {
       </div>
       <div className="mt-[20px] w-full">
         <TermsBanner />
+      </div>
+      <div className="mt-[20px] w-full">
+        <LatestNews />
+      </div>
+      <div className="mt-[20px] w-full">
+        <FeatureSection />
       </div>
     </div>
   );
