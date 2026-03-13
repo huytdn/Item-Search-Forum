@@ -8,28 +8,32 @@ import FeatureSection from "../components/FeatureSection";
 
 const Home = () => {
   return (
-    <div className="mt-4 md:mt-8 mb-10">
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-stretch">
-        <div className="lg:col-span-3 flex">
-          <HeroBanner />
+    <div className="w-full bg-[#f0f2f5] min-h-screen">
+      <div className="xl:px-[250px] px-4 md:px-10 mx-auto py-4 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-stretch">
+          <div className="lg:col-span-3 flex">
+            <HeroBanner />
+          </div>
+          <div className="lg:col-span-2 flex">
+            <PrioritySidebar />
+          </div>
         </div>
-        <div className="lg:col-span-2 flex">
-          <PrioritySidebar />
-        </div>
-      </div>
 
-      {/* Căn chỉnh lại thanh Search */}
-      <div className="mt-[40px] w-full">
-        <QuickSearch />
-      </div>
-      <div className="mt-[20px] w-full">
-        <TermsBanner />
-      </div>
-      <div className="mt-[20px] w-full">
-        <LatestNews />
-      </div>
-      <div className="mt-[20px] w-full">
-        <FeatureSection />
+        <div className="mt-10 w-full relative z-20">
+          <QuickSearch />
+        </div>
+
+        <div className="mt-6 w-full">
+          <TermsBanner />
+        </div>
+
+        <div className="mt-10 w-full">
+          <LatestNews />
+        </div>
+
+        <div className="mt-10 w-full mb-10">
+          <FeatureSection />
+        </div>
       </div>
     </div>
   );

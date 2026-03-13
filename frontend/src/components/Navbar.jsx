@@ -23,7 +23,7 @@ const Navbar = () => {
 
   return (
     <div className="w-full bg-white shadow-">
-      <div className="flex items-center justify-between py-3 lg:px-[80px] xl:px-[180px] ">
+      <div className="flex items-center justify-between py-3 xl:px-[250px] px-4 md:px-10 mx-auto">
         {/* LEFT */}
         <div className="flex items-center gap-6">
           {/* LOGO */}
