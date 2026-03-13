@@ -3,10 +3,6 @@ import React from "react";
 const QuickSearch = () => {
   return (
     <div className="w-full relative z-30">
-      {/* - group: Để các thành phần con lắng nghe sự kiện của cha
-        - focus-within:-translate-y-2: Khi click vào input, cả khối sẽ bay lên
-        - hover:-translate-y-2: Khi đưa chuột vào, cả khối sẽ bay lên
-      */}
       <div
         className="bg-white rounded-2xl p-2 lg:p-4 shadow-2xl shadow-indigo-100 border border-gray-100 
                       transition-all duration-300 ease-out

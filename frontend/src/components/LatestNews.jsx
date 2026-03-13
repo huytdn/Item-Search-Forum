@@ -4,22 +4,21 @@ import icons from "../assets/icons/icon";
 const LatestNews = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 4;
-  const { IoSearch, MdOutlineDone } = icons; // Giả sử bạn có icon tìm kiếm và hoàn thành
+  const { IoSearch, MdOutlineDone } = icons;
 
   // Dữ liệu giả lập khớp với Model Backend (Document Beanie)
   const allPosts = Array.from({ length: 12 }).map((_, index) => ({
-    _id: `post_${index + 1}`, // PydanticObjectId
+    _id: `post_${index + 1}`,
     user_id: `user_${index + 1}`,
     title: index % 2 === 0 ? "TRAN NGUYEN ANH NGOC" : "LE TUAN KIET",
     description:
       "Ai rớt thẻ sv tới chỗ mấy anh giữ xe gần khoa cntt lấy nhé. Thẻ tên Anh Ngọc lớp D23...",
-    type: index % 3 === 0 ? "lost" : "found", // Phân loại lost/found
+    type: index % 3 === 0 ? "lost" : "found",
     category: index % 2 === 0 ? "THẺ SINH VIÊN" : "THẺ NỘI TRÚ",
     images: ["https://picsum.photos/seed/" + index + "/300/200"],
     location: "Bãi giữ xe khu A",
     status: "active",
     created_at: new Date().toISOString(),
-    // Thêm field tác giả giả lập (thường sẽ join từ bảng User)
     authorName: "Linh Dinh",
     authorAvt: "https://via.placeholder.com/30",
   }));

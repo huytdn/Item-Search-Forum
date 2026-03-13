@@ -50,17 +50,12 @@ const PrioritySidebar = () => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setStartIndex(
-        (prevIndex) =>
-          // Nếu đã đến cuối danh sách thì quay lại từ đầu
-          (prevIndex + 1) % allNews.length,
-      );
+      setStartIndex((prevIndex) => (prevIndex + 1) % allNews.length);
     }, 2000); // 2 giây đổi 1 lần
 
     return () => clearInterval(timer);
   }, [allNews.length]);
 
-  // Lấy ra 4 tin liên tiếp (sử dụng toán tử % để lấy vòng lặp danh sách)
   const visibleNews = [];
   for (let i = 0; i < 4; i++) {
     visibleNews.push(allNews[(startIndex + i) % allNews.length]);
@@ -87,9 +82,9 @@ const PrioritySidebar = () => {
       <div className="flex-1 p-4 space-y-3 overflow-hidden">
         {visibleNews.map((item, index) => (
           <div
-            key={`${item.id}-${startIndex}`} // Key thay đổi theo startIndex để trigger animation
+            key={`${item.id}-${startIndex}`}
             className="flex gap-3 group cursor-pointer p-1.5 rounded-2xl hover:bg-gray-50 transition-all duration-200 animate-slide-up"
-            style={{ animationDelay: `${index * 0.1}s` }} // Hiệu ứng xuất hiện so le
+            style={{ animationDelay: `${index * 0.1}s` }}
           >
             <div className="relative flex-shrink-0">
               <img

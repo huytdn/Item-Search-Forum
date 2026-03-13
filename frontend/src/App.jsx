@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import { useAppContext } from "./context/AppContext";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 function App() {
   const { showUserLogin } = useAppContext();
@@ -16,6 +17,8 @@ function App() {
           <Route path="/" element={<Home />} />
         </Routes>
       </main>
+
+      <Footer />
     </div>
   );
 }
