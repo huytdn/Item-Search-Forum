@@ -8,6 +8,7 @@ import Register from "./components/Register";
 import Post from "./pages/Post";
 import ManagePost from "./pages/ManagePost";
 import SearchPage from "./pages/SearchPage";
+import PostDetail from "./pages/PostDetail";
 
 function App() {
   const { user } = useAppContext();
@@ -25,16 +26,15 @@ function App() {
       <main className="flex-grow w-full">
         <Routes>
           <Route path="/" element={<Home />} />
-
           <Route path="/post" element={<Post />} />
           <Route
             path="/manage-post"
             element={user ? <ManagePost /> : <Navigate to="/login" />}
           />
-
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/post/:id" element={<PostDetail />} />
         </Routes>
       </main>
 

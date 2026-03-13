@@ -1,15 +1,16 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
 import icons from "../assets/icons/icon";
 
 const DetailedSearch = () => {
+  const navigate = useNavigate(); // 2. Khởi tạo navigate
   const [viewMode, setViewMode] = useState("list");
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
   const [allPosts] = useState(
     Array(18).fill({
-      id: 1,
+      id: "123", // Giả sử ID bài viết là 123
       title: "NGUYEN GIA HAO",
       description:
         "Mình có nhặt được 1 ví có giấy tờ thông tin của 1 bạn. Liên hệ sđt để nhận lại nha",
@@ -25,13 +26,11 @@ const DetailedSearch = () => {
     }),
   );
 
-  // Tính toán dữ liệu cho trang hiện tại
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentPosts = allPosts.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(allPosts.length / itemsPerPage);
 
-  // Hàm chuyển trang
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -39,9 +38,10 @@ const DetailedSearch = () => {
 
   return (
     <div className="w-full bg-[#f0f2f5] min-h-screen xl:px-[250px] px-4 md:px-10 py-8">
-      {/* CARD TRẮNG CHÍNH */}
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-10">
-        {/* TIÊU ĐỀ & BANNER ƯU TIÊN */}
+        {/* ... (Phần Header, SearchBar, Filter giữ nguyên) ... */}
+
+        {/* HEADER & SEARCH BAR */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-[#2d3436] uppercase tracking-wider mb-6">
             Tìm kiếm thông minh
@@ -67,7 +67,6 @@ const DetailedSearch = () => {
           </div>
         </div>
 
-        {/* THANH TÌM KIẾM CHÍNH */}
         <div className="flex gap-3 mb-8 border border-gray-100 p-2 rounded-2xl shadow-sm">
           <div className="flex-1 flex items-center px-4 gap-3 bg-gray-50 rounded-xl">
             <span className="text-gray-400">🔍</span>
@@ -82,18 +81,16 @@ const DetailedSearch = () => {
           </button>
         </div>
 
-        {/* BỘ LỌC CHI TIẾT */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-8 border border-gray-50 p-6 rounded-2xl bg-[#fafafa]">
-          <div className="space-y-2">
+          <div className="space-y-2 col-span-1 md:col-span-1">
             <label className="text-xs font-bold text-gray-500">Danh mục</label>
-            <select className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-indigo-300">
+            <select className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none">
               <option>Tất cả danh mục</option>
             </select>
           </div>
-
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-500">Loại tin</label>
-            <select className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-indigo-300">
+            <select className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none">
               <option>Tất cả loại tin</option>
             </select>
           </div>
@@ -102,7 +99,7 @@ const DetailedSearch = () => {
           </button>
         </div>
 
-        {/* ĐIỀU KHIỂN CHẾ ĐỘ XEM */}
+        {/* VIEW CONTROL */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex gap-2 bg-gray-50 p-1 rounded-xl border border-gray-100">
             <button
@@ -110,7 +107,7 @@ const DetailedSearch = () => {
                 setViewMode("list");
                 setCurrentPage(1);
               }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "list" ? "bg-white text-[#5f27cd] shadow-sm" : "text-gray-400"}`}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "list" ? "bg-white text-[#5f27cd] shadow-sm" : "text-gray-400"}`}
             >
               ☰ Danh sách
             </button>
@@ -119,19 +116,18 @@ const DetailedSearch = () => {
                 setViewMode("grid");
                 setCurrentPage(1);
               }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "grid" ? "bg-white text-[#5f27cd] shadow-sm" : "text-gray-400"}`}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "grid" ? "bg-white text-[#5f27cd] shadow-sm" : "text-gray-400"}`}
             >
               ⊞ Lưới
             </button>
           </div>
           <p className="text-xs text-gray-400 font-medium italic">
             Hiển thị {indexOfFirstItem + 1} -{" "}
-            {Math.min(indexOfLastItem, allPosts.length)} trong tổng số{" "}
-            {allPosts.length} kết quả.
+            {Math.min(indexOfLastItem, allPosts.length)} kết quả.
           </p>
         </div>
 
-        {/* HIỂN THỊ KẾT QUẢ THEO TRANG */}
+        {/* GRID/LIST RENDER */}
         <div
           className={
             viewMode === "grid"
@@ -141,44 +137,43 @@ const DetailedSearch = () => {
         >
           {currentPosts.map((post, index) =>
             viewMode === "list" ? (
-              <ListItem key={index} post={post} />
+              <ListItem
+                key={index}
+                post={post}
+                onNavigate={() => navigate(`/post/${post.id}`)}
+              />
             ) : (
-              <GridItem key={index} post={post} />
+              <GridItem
+                key={index}
+                post={post}
+                onNavigate={() => navigate(`/post/${post.id}`)}
+              />
             ),
           )}
         </div>
 
-        {/* PHÂN TRANG (PAGINATION) HOẠT ĐỘNG THỰC TẾ */}
+        {/* PAGINATION */}
         <div className="flex justify-center items-center gap-2 mt-12">
-          {/* Nút lùi trang */}
           <button
             disabled={currentPage === 1}
             onClick={() => paginate(currentPage - 1)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-100 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-100 text-gray-400 disabled:opacity-30"
           >
             ‹
           </button>
-
-          {/* Các nút số trang */}
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
             <button
               key={number}
               onClick={() => paginate(number)}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg font-bold transition-all ${
-                currentPage === number
-                  ? "bg-[#5f27cd] text-white shadow-md shadow-indigo-200"
-                  : "border border-gray-100 text-gray-400 hover:bg-gray-50"
-              }`}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg font-bold transition-all ${currentPage === number ? "bg-[#5f27cd] text-white" : "border border-gray-100 text-gray-400"}`}
             >
               {number}
             </button>
           ))}
-
-          {/* Nút tiến trang */}
           <button
             disabled={currentPage === totalPages}
             onClick={() => paginate(currentPage + 1)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-100 text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-100 text-gray-400 disabled:opacity-30"
           >
             ›
           </button>
@@ -188,9 +183,12 @@ const DetailedSearch = () => {
   );
 };
 
-// COMPONENT CON: GIAO DIỆN DÒNG (LIST)
-const ListItem = ({ post }) => (
-  <div className="group flex flex-col md:flex-row gap-6 p-4 border border-gray-100 rounded-2xl hover:border-indigo-200 hover:shadow-md transition-all relative">
+// 3. Cập nhật ListItem: Thêm onClick vào thẻ cha và nút
+const ListItem = ({ post, onNavigate }) => (
+  <div
+    onClick={onNavigate}
+    className="group flex flex-col md:flex-row gap-6 p-4 border border-gray-100 rounded-2xl hover:border-indigo-200 hover:shadow-md transition-all relative cursor-pointer"
+  >
     {post.isUrgent && (
       <span className="absolute -top-2 -left-2 bg-red-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold z-10 shadow-sm">
         TIN GẤP
@@ -225,8 +223,8 @@ const ListItem = ({ post }) => (
       <div className="flex justify-between items-center pt-3 mt-4 border-t border-gray-50">
         <div className="flex items-center gap-4 text-[10px] font-bold text-gray-400">
           <span className="flex items-center gap-1">👤 {post.author}</span>
-          <span className="flex items-center gap-1">👁️ {post.views}</span>
-          <span className="flex items-center gap-1">💬 {post.comments}</span>
+          <span>👁️ {post.views}</span>
+          <span>💬 {post.comments}</span>
         </div>
         <button className="text-[#5f27cd] text-xs font-bold hover:translate-x-1 transition-transform">
           Xem chi tiết ❯
@@ -236,9 +234,12 @@ const ListItem = ({ post }) => (
   </div>
 );
 
-// COMPONENT CON: GIAO DIỆN LƯỚI (GRID)
-const GridItem = ({ post }) => (
-  <div className="group border border-gray-100 rounded-3xl overflow-hidden hover:border-indigo-200 hover:shadow-xl transition-all bg-white flex flex-col h-full">
+// 4. Cập nhật GridItem: Thêm onClick vào thẻ cha và nút
+const GridItem = ({ post, onNavigate }) => (
+  <div
+    onClick={onNavigate}
+    className="group border border-gray-100 rounded-3xl overflow-hidden hover:border-indigo-200 hover:shadow-xl transition-all bg-white flex flex-col h-full cursor-pointer"
+  >
     <div className="relative h-48 overflow-hidden">
       {post.isUrgent && (
         <span className="absolute top-3 left-3 bg-red-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold z-10">
