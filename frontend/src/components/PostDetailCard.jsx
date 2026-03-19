@@ -1,11 +1,14 @@
-import React, { useState } from "react"; // Thêm useState để quản lý nội dung bình luận
-import { useParams, useNavigate } from "react-router-dom"; // Thêm useNavigate
-import { useAppContext } from "../context/AppContext"; // Import AppContext
+import React, { useState, useRef, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
 import {
   FaFacebook,
   FaLink,
   FaRegCommentDots,
   FaPaperPlane,
+  FaEllipsisV,
+  FaCheckCircle,
+  FaTrashAlt,
 } from "react-icons/fa";
 import {
   MdOutlineLocationOn,
@@ -17,9 +20,25 @@ import { IoChatbubbleEllipses } from "react-icons/io5";
 
 const PostDetailCard = () => {
   const { id } = useParams();
-  const { user, navigate } = useAppContext(); // Lấy user và navigate từ context
-  const [commentText, setCommentText] = useState(""); // Quản lý nội dung bình luận đang nhập
+  const { user, navigate } = useAppContext();
+  const [commentText, setCommentText] = useState("");
 
+  // State cho Menu 3 chấm
+  const [showActionMenu, setShowActionMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  // Xử lý đóng menu khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowActionMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Dữ liệu giả lập (Sau này fetch theo id)
   const postData = {
     title: "NGUYEN GIA HAO",
     type: "Nhặt được",
@@ -40,9 +59,8 @@ const PostDetailCard = () => {
 
   const handleSendComment = () => {
     if (!commentText.trim()) return;
-    console.log("Gửi bình luận:", commentText);
-    setCommentText(""); // Xóa nội dung sau khi gửi
-    alert("Tính năng gửi bình luận đang được phát triển!");
+    alert(`Đã gửi bình luận: ${commentText}`);
+    setCommentText("");
   };
 
   return (
@@ -55,6 +73,7 @@ const PostDetailCard = () => {
           </h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* CỘT TRÁI: ẢNH */}
             <div className="lg:col-span-4">
               <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm sticky top-24">
                 <img
@@ -65,6 +84,7 @@ const PostDetailCard = () => {
               </div>
             </div>
 
+            {/* CỘT GIỮA: THÔNG TIN */}
             <div className="lg:col-span-5 space-y-6">
               <div className="flex gap-2">
                 <span className="bg-[#e6fcf5] text-[#0ca678] text-[11px] font-bold px-3 py-1 rounded-md uppercase">
@@ -91,6 +111,7 @@ const PostDetailCard = () => {
                     </span>
                   </div>
                 </div>
+
                 <div className="flex items-start gap-4">
                   <MdOutlineSchool className="text-gray-400 text-xl mt-0.5" />
                   <div className="flex flex-col">
@@ -102,6 +123,7 @@ const PostDetailCard = () => {
                     </span>
                   </div>
                 </div>
+
                 <div className="flex items-start gap-4">
                   <MdOutlineCalendarToday className="text-gray-400 text-xl mt-0.5" />
                   <div className="flex flex-col">
@@ -113,6 +135,7 @@ const PostDetailCard = () => {
                     </span>
                   </div>
                 </div>
+
                 <div className="flex items-start gap-4">
                   <MdOutlineRemoveRedEye className="text-gray-400 text-xl mt-0.5" />
                   <div className="flex flex-col">
@@ -127,32 +150,70 @@ const PostDetailCard = () => {
               </div>
 
               <div className="pt-6 flex flex-col gap-3">
-                <div className="flex gap-2">
+                <div className="flex gap-2 relative" ref={menuRef}>
                   <button className="flex-1 bg-[#099268] hover:bg-[#087f5b] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-green-100">
                     <IoChatbubbleEllipses className="text-xl" /> Liên hệ nhận
                   </button>
-                  <button className="w-14 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-100">
-                    ...
-                  </button>
+
+                  {/* NÚT 3 CHẤM DỌC */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowActionMenu(!showActionMenu)}
+                      className="w-14 h-full bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-100 text-gray-600 transition-colors"
+                    >
+                      <FaEllipsisV />
+                    </button>
+
+                    {/* MENU DROPDOWN */}
+                    {showActionMenu && (
+                      <div className="absolute right-0 bottom-full mb-2 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <button
+                          onClick={() => {
+                            alert("Đã nhận đồ!");
+                            setShowActionMenu(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-700 transition-colors"
+                        >
+                          <FaCheckCircle className="text-gray-400 text-lg" />
+                          <span className="text-sm font-medium">
+                            Đã nhận được đồ
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            alert("Đã gửi yêu cầu gỡ!");
+                            setShowActionMenu(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-500 transition-colors"
+                        >
+                          <FaTrashAlt className="text-red-400 text-lg" />
+                          <span className="text-sm font-medium">
+                            Yêu cầu gỡ tin
+                          </span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <button className="bg-[#fff9db] text-[#f08c00] py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-yellow-100 hover:bg-yellow-100 transition-all">
-                    <FaFacebook /> Facebook
+                  <button className="bg-[#fff9db] text-[#f08c00] py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 border border-yellow-100 hover:bg-yellow-100 transition-all">
+                    <FaFacebook className="text-lg" /> Facebook
                   </button>
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(window.location.href);
                       alert("Đã copy liên kết!");
                     }}
-                    className="bg-[#f8f9fa] text-[#495057] py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-gray-200 hover:bg-gray-200 transition-all"
+                    className="bg-[#f8f9fa] text-[#495057] py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 border border-gray-200 hover:bg-gray-200 transition-all"
                   >
-                    <FaLink /> Copy Link
+                    <FaLink className="text-lg" /> Copy Link
                   </button>
                 </div>
               </div>
             </div>
 
+            {/* CỘT PHẢI: TÁC GIẢ */}
             <div className="lg:col-span-3">
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden sticky top-24">
                 <div className="bg-[#064e3b] text-white py-3 text-center text-[10px] font-bold uppercase tracking-widest">
@@ -192,7 +253,7 @@ const PostDetailCard = () => {
                     </div>
                   </div>
 
-                  <button className="w-full bg-[#088f81] hover:bg-[#067469] text-white text-[11px] font-bold py-3 rounded-xl mt-6 transition-all uppercase shadow-md shadow-emerald-50 tracking-wide">
+                  <button className="w-full bg-[#088f81] hover:bg-[#067469] text-white text-[10px] font-bold py-3 rounded-xl mt-6 transition-all uppercase shadow-md shadow-emerald-50 tracking-wide">
                     Nhắn tin cho người đăng
                   </button>
                 </div>
@@ -217,14 +278,13 @@ const PostDetailCard = () => {
 
           <div className="w-full">
             {user ? (
-              /* GIAO DIỆN KHI ĐÃ ĐĂNG NHẬP: Ô NHẬP BÌNH LUẬN */
-              <div className="flex gap-4">
+              <div className="flex gap-4 animate-in fade-in duration-500">
                 <div className="w-10 h-10 rounded-full bg-orange-500 flex-shrink-0 flex items-center justify-center text-white font-bold overflow-hidden shadow-sm">
                   {user.avatar ? (
                     <img
                       src={user.avatar}
                       className="w-full h-full object-cover"
-                      alt="me"
+                      alt="avatar"
                     />
                   ) : (
                     user.name?.charAt(0).toUpperCase()
@@ -249,7 +309,6 @@ const PostDetailCard = () => {
                 </div>
               </div>
             ) : (
-              /* GIAO DIỆN KHI CHƯA ĐĂNG NHẬP */
               <div className="flex flex-col items-center justify-center py-10">
                 <p className="text-gray-400 font-medium mb-4 text-sm">
                   Chưa có bình luận nào. Hãy là người đầu tiên!

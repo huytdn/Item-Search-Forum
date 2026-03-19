@@ -1,0 +1,14 @@
+# Bỏ qua cache của Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Bỏ qua môi trường ảo
+venv/
+env/
+
+# Bỏ qua file Database cục bộ
+*.db
+*.sqlite3
+lostfound.db
