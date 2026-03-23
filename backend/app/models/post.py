@@ -22,3 +22,10 @@ class Post(Base):
     owner = relationship("User", back_populates="posts")
     # Comment
     comments = relationship("Comment", back_populates="post")
+
+    # ... (các cột giữ nguyên)
+
+    owner = relationship("User", back_populates="posts")
+    
+    # Thêm cascade: Xóa bài Post -> Xóa luôn toàn bộ Comment trong bài đó
+    comments = relationship("Comment", back_populates="post", cascade="all, delete-orphan")

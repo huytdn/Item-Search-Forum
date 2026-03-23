@@ -1,39 +1,35 @@
 from sqlalchemy.orm import Session
 from app.models.user import User
-from passlib.context import CryptContext
-
-# Cấu hình hash password
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
-)
+from app.schemas.userschemas import UserCreate
+# Import các hàm bảo mật từ folder core mới tạo
+from app.core.security import hash_password, verify_password, create_access_token
 
 # =======================
-# REGISTER
+# LOGIC ĐĂNG KÝ
 # =======================
-def register(db: Session, username: str, email: str, password: str):
+def register_user_logic(db: Session, user_data: UserCreate):
     try:
         # 1. Check email tồn tại
-        existing_user = db.query(User).filter(User.email == email).first()
+        existing_user = db.query(User).filter(User.email == user_data.email).first()
         if existing_user:
             raise ValueError("Email already exists")
 
-        # 2. Hash password
-        hashed_password = pwd_context.hash(password)
+        # 2. Hash password (gọi sang core/security)
+        hashed_password = hash_password(user_data.password)
 
-        # 3. Tạo user
-        user = User(
-            username=username,
-            email=email,
+        # 3. Tạo user object từ SQLAlchemy model
+        new_user = User(
+            username=user_data.username,
+            email=user_data.email,
             password_hash=hashed_password
         )
 
         # 4. Lưu DB
-        db.add(user)
+        db.add(new_user)
         db.commit()
-        db.refresh(user)
+        db.refresh(new_user)
 
-        return user
+        return new_user
 
     except Exception as e:
         db.rollback()
@@ -41,31 +37,25 @@ def register(db: Session, username: str, email: str, password: str):
 
 
 # =======================
-# LOGIN
+# LOGIC ĐĂNG NHẬP
 # =======================
-def login(db: Session, email: str, password: str):
+def authenticate_user_logic(db: Session, email: str, password: str):
+    """
+    Xác thực thông tin đăng nhập. 
+    Nếu đúng, trả về object User. Nếu sai, trả về None.
+    """
     try:
-        # 1. Tìm user
+        # 1. Tìm user theo email
         user = db.query(User).filter(User.email == email).first()
         if not user:
-            return None
+            return None # Không tìm thấy user
 
-        # 2. Verify password
-        if not pwd_context.verify(password, user.password_hash):
-            return None
+        # 2. Verify password (gọi sang core/security)
+        if not verify_password(password, user.password_hash):
+            return None # Sai mật khẩu
 
+        # 3. Trả về object user đã xác thực thành công
         return user
 
     except Exception as e:
         raise e
-
-
-# =======================
-# HASH (optional utility)
-# =======================
-def hash_password(password: str):
-    return pwd_context.hash(password)
-
-
-def verify_password(plain_password: str, hashed_password: str):
-    return pwd_context.verify(plain_password, hashed_password)
