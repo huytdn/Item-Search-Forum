@@ -1,13 +1,51 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { FaRegEnvelope, FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { MdLockOutline } from "react-icons/md";
 import { FcGoogle } from "react-icons/fc";
 import { MdCheckCircle } from "react-icons/md";
+import { useAppContext } from "../context/AppContext";
+
+// 1. Import hàm login từ service bạn đã tạo
+import { login } from "../services/authService";
 
 const Login = () => {
+  const { setUser, navigate } = useAppContext();
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
+
+  // 2. Thêm state để quản lý form và trạng thái gửi dữ liệu
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // 3. Hàm xử lý thay đổi input
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError(""); // Xóa thông báo lỗi khi người dùng gõ lại
+  };
+
+  // 4. Hàm xử lý Submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const result = await login(formData);
+      console.log("Đăng nhập thành công:", result);
+
+      // Chuyển hướng sang trang chủ hoặc dashboard
+      navigate("/");
+      setUser(result.user);
+    } catch (err) {
+      // Lấy message lỗi từ FastAPI (detail)
+      const errorMsg =
+        err.response?.data?.detail || "Đăng nhập thất bại. Vui lòng thử lại.";
+      setError(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen w-full font-sans">
@@ -36,8 +74,7 @@ const Login = () => {
                 key={idx}
                 className="flex items-center gap-3 text-white/90 font-medium"
               >
-                <MdCheckCircle className="text-[#9ed3a6] text-xl" />
-                {text}
+                <MdCheckCircle className="text-[#9ed3a6] text-xl" /> {text}
               </li>
             ))}
           </ul>
@@ -64,7 +101,14 @@ const Login = () => {
         <div className="w-full max-w-sm">
           <h2 className="text-2xl font-bold text-gray-800 mb-8">Đăng nhập</h2>
 
-          <form className="space-y-5">
+          {/* 5. Hiển thị thông báo lỗi nếu có */}
+          {error && (
+            <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-500 border border-red-100">
+              {error}
+            </div>
+          )}
+
+          <form className="space-y-5" onSubmit={handleSubmit}>
             {/* Email */}
             <div>
               <label className="text-sm font-semibold text-gray-600 mb-1 block">
@@ -73,7 +117,11 @@ const Login = () => {
               <div className="relative group">
                 <FaRegEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#319795]" />
                 <input
+                  name="email" // Quan trọng: Khớp với key trong formData
                   type="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
                   placeholder="Nhập email tại đây"
                   className="w-full rounded-xl border border-gray-100 bg-gray-50 py-3 pl-12 pr-4 text-sm outline-none transition-all focus:border-[#319795] focus:bg-white focus:ring-4 focus:ring-teal-50"
                 />
@@ -88,7 +136,11 @@ const Login = () => {
               <div className="relative group">
                 <MdLockOutline className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg group-focus-within:text-[#319795]" />
                 <input
+                  name="password" // Quan trọng: Khớp với key trong formData
                   type={showPassword ? "text" : "password"}
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
                   placeholder="Nhập mật khẩu tại đây"
                   className="w-full rounded-xl border border-gray-100 bg-gray-50 py-3 pl-12 pr-12 text-sm outline-none transition-all focus:border-[#319795] focus:bg-white focus:ring-4 focus:ring-teal-50"
                 />
@@ -113,6 +165,7 @@ const Login = () => {
               </label>
               <Link
                 to="/forgot-password"
+                size="small"
                 className="text-[#dd6b20] hover:underline font-semibold"
               >
                 Quên mật khẩu?
@@ -122,9 +175,14 @@ const Login = () => {
             {/* Login Button */}
             <button
               type="submit"
-              className="w-full rounded-xl bg-[#319795] py-3.5 font-bold text-white shadow-lg shadow-teal-100 transition-all hover:bg-[#2c7a7b] active:scale-[0.98]"
+              disabled={loading} // Disable khi đang call API
+              className={`w-full rounded-xl py-3.5 font-bold text-white shadow-lg transition-all active:scale-[0.98] ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#319795] hover:bg-[#2c7a7b] shadow-teal-100"
+              }`}
             >
-              ĐĂNG NHẬP
+              {loading ? "ĐANG XỬ LÝ..." : "ĐĂNG NHẬP"}
             </button>
           </form>
 
@@ -138,8 +196,7 @@ const Login = () => {
 
           {/* Google Login */}
           <button className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 py-3 text-sm font-bold text-gray-700 transition-all hover:bg-gray-50 active:scale-[0.98]">
-            <FcGoogle className="text-xl" />
-            Đăng nhập bằng Google
+            <FcGoogle className="text-xl" /> Đăng nhập bằng Google
           </button>
 
           {/* Sign Up Link */}

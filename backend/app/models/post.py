@@ -9,23 +9,16 @@ class Post(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
     description = Column(String)
-    type = Column(String)  # LOST / FOUND
+    type = Column(String)        # LOST / FOUND
+    category = Column(String)    
     location = Column(String)
-    image = Column(String, nullable=True) # Có thể null
+    contact = Column(String)     
+    image = Column(String, nullable=True)
     views = Column(Integer, default=0)
-
-    # Đã sửa lại ForeignKey cho chuẩn
+    
     user_id = Column(Integer, ForeignKey("users.id")) 
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationship
     owner = relationship("User", back_populates="posts")
-    # Comment
-    comments = relationship("Comment", back_populates="post")
-
-    # ... (các cột giữ nguyên)
-
-    owner = relationship("User", back_populates="posts")
-    
-    # Thêm cascade: Xóa bài Post -> Xóa luôn toàn bộ Comment trong bài đó
     comments = relationship("Comment", back_populates="post", cascade="all, delete-orphan")

@@ -14,17 +14,22 @@ const {
 
 const Navbar = () => {
   const { user, setUser, navigate } = useAppContext();
-
   const [showMenu, setShowMenu] = useState(false);
+
   const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
+    setShowMenu(false);
     navigate("/");
   };
 
   return (
-    <div className="w-full bg-white shadow-">
+    <div className="w-full bg-white shadow-sm">
+      {" "}
+      {/* Đã sửa bóng đổ nhẹ shadow-sm */}
       <div className="flex items-center justify-between py-3 xl:px-[250px] px-4 md:px-10 mx-auto">
-        {/* LEFT */}
+        {/* LEFT SECTION */}
         <div className="flex items-center gap-6">
           {/* LOGO */}
           <div
@@ -34,66 +39,59 @@ const Navbar = () => {
             <img src={logo} alt="logo" className="h-12 object-contain" />
           </div>
 
-          {/* SEARCH */}
+          {/* SEARCH - Giữ nguyên class btn-search của bạn */}
           <button onClick={() => navigate("/search")} className="btn-search">
             <span className="icon-search">🔍</span> Tìm kiếm chi tiết
           </button>
         </div>
 
-        {/* RIGHT */}
+        {/* RIGHT SECTION */}
         <div className="flex items-center gap-4">
-          {/* NOT LOGIN */}
+          {/* NOT LOGIN: Hiển thị nút Đăng nhập màu xanh dương cũ */}
           {!user && (
             <button
               onClick={() => navigate("/login")}
-              className="bg-blue-500 hover:bg-blue-600
-              text-white px-5 py-2 rounded-full
-              font-medium transition"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-full font-medium transition"
             >
               Đăng nhập
             </button>
           )}
 
-          {/* LOGIN */}
+          {/* LOGIN: Hiển thị các icon và menu profile */}
           {user && (
             <>
-              {/* message */}
+              {/* Message - Màu xanh nhạt của bạn */}
               <button className="text-3xl hover:scale-110 transition duration-300 text-blue-400">
                 <TbMessageCircleFilled />
               </button>
 
-              {/* notification */}
+              {/* Notification */}
               <button className="text-3xl hover:scale-110 transition duration-300 text-blue-400">
                 <FaBell />
               </button>
 
-              {/* post */}
+              {/* Nút Đăng tin - Màu xanh lá đặc trưng */}
               <button
                 onClick={() => navigate("/post")}
-                className="bg-[#16a34a] hover:bg-[#15803d]
-                text-white px-6 py-2.5 rounded-lg
-                text-sm font-medium transition "
+                className="bg-[#16a34a] hover:bg-[#15803d] text-white px-6 py-2.5 rounded-lg text-sm font-medium transition"
               >
-                <div className="flex justify-center items-center ">
+                <div className="flex justify-center items-center">
                   <LuPlus className="text-white mr-1" /> Đăng tin
                 </div>
               </button>
 
-              {/* manage */}
+              {/* Quản lý tin - Border xám, icon clipping */}
               <button
                 onClick={() => navigate("/manage")}
-                className="bg-white hover:bg-[#f8fafc] hover:border-[#94a3b8] border-[#cbd5e1] border-1
-                px-6 py-2.5 rounded-lg text-sm font-medium"
+                className="bg-white hover:bg-[#f8fafc] hover:border-[#94a3b8] border-[#cbd5e1] border-[1px] px-6 py-2.5 rounded-lg text-sm font-medium"
               >
                 <div className="flex justify-center items-center">
-                  <PiNewspaperClippingFill className=" mr-1.5" /> Quản lý tin
+                  <PiNewspaperClippingFill className="mr-1.5" /> Quản lý tin
                 </div>
               </button>
 
-              {/* profile */}
-              {/* PROFILE DROPDOWN SECTION */}
+              {/* PROFILE DROPDOWN - Layout Avatar + Tên + Mũi tên */}
               <div className="relative group">
-                {/* Nút bấm bao gồm cả cụm: Avatar, Tên, Mũi tên */}
                 <div
                   onClick={() => setShowMenu(!showMenu)}
                   className="flex items-center gap-2 p-1 px-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-all duration-200"
@@ -107,17 +105,18 @@ const Navbar = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      user?.name?.charAt(0).toUpperCase() || "B"
+                      // Lấy chữ cái đầu của username, nếu không có thì mặc định là 'U'
+                      user?.username?.charAt(0).toUpperCase() || "U"
                     )}
                   </div>
 
                   {/* Hiển thị Tên bên cạnh Avatar */}
                   <div className="flex items-center gap-1">
                     <span className="text-[14px] font-medium text-gray-800 max-w-[150px] truncate">
-                      {user?.name || "B23DCAT134"}
+                      {user?.username || "Sinh viên"}
                     </span>
 
-                    {/* Icon Mũi tên xuống */}
+                    {/* Icon Mũi tên xoay */}
                     <svg
                       className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${showMenu ? "rotate-180" : ""}`}
                       fill="none"
@@ -134,17 +133,16 @@ const Navbar = () => {
                   </div>
                 </div>
 
-                {/* DROPDOWN MENU (Hiển thị khi click) */}
+                {/* DROPDOWN MENU */}
                 {showMenu && (
                   <>
-                    {/* Lớp phủ để click ra ngoài thì đóng menu */}
                     <div
                       className="fixed inset-0 z-10"
                       onClick={() => setShowMenu(false)}
                     ></div>
 
                     <div className="absolute right-0 mt-4 w-56 bg-white border border-gray-100 rounded-xl shadow-xl py-2 z-20 animate-in fade-in zoom-in duration-200">
-                      {/* Mục Trang cá nhân */}
+                      {/* Trang cá nhân */}
                       <div
                         onClick={() => {
                           navigate("/profile");
@@ -162,12 +160,9 @@ const Navbar = () => {
 
                       <div className="border-t border-gray-100 my-1 mx-2"></div>
 
-                      {/* Mục Đăng xuất */}
+                      {/* Đăng xuất - Icon đỏ */}
                       <div
-                        onClick={() => {
-                          logout();
-                          setShowMenu(false);
-                        }}
+                        onClick={logout}
                         className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
                       >
                         <div className="text-red-500">
