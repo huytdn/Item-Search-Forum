@@ -1,18 +1,35 @@
-import React, { useState } from "react";
-import { MdCheckCircle, MdCloudUpload } from "react-icons/md";
-import { FaMapMarkerAlt } from "react-icons/fa";
+import React, { useState, useRef } from "react";
+import { MdCheckCircle, MdCloudUpload, MdClose } from "react-icons/md";
 import { useAppContext } from "../context/AppContext";
+import axios from "axios"; // Thêm axios
 
 const CreatePost = () => {
   const { user } = useAppContext();
+  const fileInputRef = useRef(null);
+
   const [postType, setPostType] = useState("lost");
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [loading, setLoading] = useState(false); // Thêm trạng thái chờ khi đang upload
+
+  const CATEGORIES = [
+    "Thẻ sinh viên",
+    "Căn cước công dân",
+    "Bằng lái xe",
+    "Thẻ ATM/Ngân hàng",
+    "Ví/Bóp",
+    "Điện thoại/Laptop",
+    "Chìa khóa",
+    "Balo/Túi xách",
+    "Giấy tờ khác",
+    "Khác",
+  ];
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    location: "",
-    school: "",
     category: "",
+    location: "",
     contact: "",
   });
 
@@ -21,55 +38,122 @@ const CreatePost = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        // Giới hạn 5MB
+        alert("File ảnh quá lớn, vui lòng chọn file dưới 5MB");
+        return;
+      }
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Dữ liệu gửi đi:", { postType, ...formData });
-    alert("Đang xử lý đăng tin...");
+    if (!imageFile) return alert("Vui lòng tải lên ảnh minh họa");
+
+    setLoading(true);
+
+    // 1. Lấy token từ localStorage (hoặc nơi bạn lưu khi đăng nhập)
+    const token = localStorage.getItem("token");
+
+    // Kiểm tra nhanh xem có token không trước khi gửi
+    if (!token) {
+      alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại!");
+      setLoading(false);
+      return;
+    }
+
+    const data = new FormData();
+    data.append("title", formData.title);
+    data.append("description", formData.description);
+    data.append("type", postType.toUpperCase());
+    data.append("category", formData.category);
+    data.append("location", formData.location);
+    data.append("contact", formData.contact);
+    data.append("file", imageFile);
+
+    try {
+      const response = await axios.post("http://127.0.0.1:8000/posts", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          // 2. Thêm header Authorization với tiền tố Bearer
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data) {
+        alert("Đăng tin thành công!");
+        setFormData({
+          title: "",
+          description: "",
+          category: "",
+          location: "",
+          contact: "",
+        });
+        removeImage();
+      }
+    } catch (error) {
+      console.error("Lỗi đăng tin:", error);
+
+      // Xử lý lỗi 401 (Unauthorized) riêng biệt
+      if (error.response?.status === 401) {
+        alert(
+          "Bạn không có quyền thực hiện hành động này. Vui lòng đăng nhập lại.",
+        );
+      } else {
+        alert(error.response?.data?.detail || "Không thể kết nối đến server");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 md:p-12">
-      {/* HEADER LUÔN HIỂN THỊ */}
+      {/* Header Section */}
       <div className="text-center mb-10">
         <h1 className="text-3xl font-extrabold text-[#1e293b] uppercase tracking-wider">
           Trang Đăng Tin
         </h1>
         <div className="flex justify-center gap-6 mt-4 text-[13px] font-semibold text-gray-500">
-          <div className="flex items-center gap-1.5 whitespace-nowrap">
+          <div className="flex items-center gap-1.5">
             <MdCheckCircle className="text-green-500 text-lg" /> AI thông minh
-            tự tìm kiếm
           </div>
-          <div className="flex items-center gap-1.5 whitespace-nowrap">
+          <div className="flex items-center gap-1.5">
             <MdCheckCircle className="text-green-500 text-lg" /> Phản hồi nhanh
-            chóng
           </div>
-          <div className="flex items-center gap-1.5 whitespace-nowrap">
-            <MdCheckCircle className="text-green-500 text-lg" /> Bảo mật thông
-            tin
+          <div className="flex items-center gap-1.5">
+            <MdCheckCircle className="text-green-500 text-lg" /> Bảo mật
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* LEFT COLUMN: MAIN CONTENT */}
         <div className="lg:col-span-2">
           {!user ? (
-            /* GIAO DIỆN KHI CHƯA ĐĂNG NHẬP */
-            <div className="py-10">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
+            <div className="py-10 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+              <h2 className="text-xl font-bold text-gray-800 mb-2">
                 Bạn cần đăng nhập để đăng tin
               </h2>
-              <p className="text-gray-500 text-sm leading-relaxed">
-                Vui lòng quay lại trang chủ và đăng nhập bằng Google để tiếp
-                tục.
+              <p className="text-gray-500 text-sm">
+                Vui lòng đăng nhập bằng tài khoản Google để tiếp tục.
               </p>
             </div>
           ) : (
-            /* GIAO DIỆN FORM ĐẦY ĐỦ KHI ĐÃ ĐĂNG NHẬP */
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* BƯỚC 1: CHỌN LOẠI TIN */}
+              {/* Bước 1: Loại tin */}
               <section className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <h2 className="text-indigo-600 font-bold text-sm mb-4 uppercase tracking-wide">
+                <h2 className="text-indigo-600 font-bold text-sm mb-4 uppercase">
                   Bước 1: Chọn loại tin
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -77,7 +161,7 @@ const CreatePost = () => {
                     onClick={() => setPostType("lost")}
                     className={`cursor-pointer p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${postType === "lost" ? "border-pink-500 bg-pink-50" : "border-gray-50 hover:border-pink-200"}`}
                   >
-                    <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 text-2xl font-bold">
+                    <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 text-2xl">
                       🔍
                     </div>
                     <div>
@@ -85,7 +169,7 @@ const CreatePost = () => {
                         Tìm đồ thất lạc
                       </h3>
                       <p className="text-[11px] text-gray-400">
-                        Đăng bài tìm kiếm món đồ bạn bị mất
+                        Đăng bài tìm kiếm đồ bị mất
                       </p>
                     </div>
                   </div>
@@ -93,59 +177,76 @@ const CreatePost = () => {
                     onClick={() => setPostType("found")}
                     className={`cursor-pointer p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${postType === "found" ? "border-indigo-500 bg-indigo-50" : "border-gray-100 hover:border-indigo-200"}`}
                   >
-                    <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 text-2xl font-bold">
+                    <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 text-2xl">
                       📍
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-800">Nhặt được đồ</h3>
                       <p className="text-[11px] text-gray-400">
-                        Đăng bài món đồ bạn nhặt được
+                        Đăng bài món đồ nhặt được
                       </p>
                     </div>
                   </div>
                 </div>
               </section>
 
-              {/* BƯỚC 2: TẢI ẢNH */}
+              {/* Bước 2: Tải ảnh */}
               <section className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-indigo-600 font-bold text-sm uppercase">
-                    Bước 2: Tải ảnh
-                  </h2>
-                  <button
-                    type="button"
-                    className="bg-amber-50 text-amber-600 text-[11px] px-3 py-1 rounded-lg font-bold border border-amber-100 flex items-center gap-1"
-                  >
-                    ❓ Hướng dẫn
-                  </button>
-                </div>
-                <div className="bg-red-50 p-4 rounded-xl border border-red-100 mb-6">
-                  <p className="text-[12px] text-red-600 leading-relaxed font-medium">
-                    <span className="font-bold uppercase underline">
-                      Bắt buộc
-                    </span>{" "}
-                    che mờ thông tin cá nhân trên giấy tờ.
-                  </p>
-                </div>
-                <div className="border-2 border-dashed border-gray-200 rounded-2xl py-12 flex flex-col items-center justify-center bg-gray-50 hover:bg-white transition-all cursor-pointer group">
-                  <MdCloudUpload className="text-5xl text-gray-300 group-hover:text-indigo-400 transition-colors" />
-                  <p className="mt-4 text-indigo-600 font-bold text-sm">
-                    Nhấp hoặc kéo thả ảnh vào đây
-                  </p>
+                <h2 className="text-indigo-600 font-bold text-sm uppercase mb-4">
+                  Bước 2: Tải ảnh
+                </h2>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <div
+                  onClick={() => !imagePreview && fileInputRef.current.click()}
+                  className={`border-2 border-dashed rounded-2xl py-12 flex flex-col items-center justify-center transition-all cursor-pointer relative ${imagePreview ? "border-indigo-400" : "border-gray-200 bg-gray-50 hover:bg-white"}`}
+                >
+                  {imagePreview ? (
+                    <div className="relative group">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="max-h-64 rounded-lg object-contain"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeImage();
+                        }}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg hover:scale-110 transition-transform"
+                      >
+                        <MdClose size={20} />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <MdCloudUpload className="text-5xl text-gray-300" />
+                      <p className="mt-4 text-indigo-600 font-bold text-sm">
+                        Nhấp để tải ảnh
+                      </p>
+                      <p className="text-gray-400 text-[10px] mt-1">
+                        Hỗ trợ JPG, PNG (Tối đa 5MB)
+                      </p>
+                    </>
+                  )}
                 </div>
               </section>
 
-              {/* BƯỚC 3: THÔNG TIN CHI TIẾT */}
+              {/* Bước 3: Thông tin chi tiết */}
               <section className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                <h2 className="text-indigo-600 font-bold text-sm uppercase tracking-wide">
+                <h2 className="text-indigo-600 font-bold text-sm uppercase">
                   Bước 3: Thông tin chi tiết
                 </h2>
-
                 <div className="space-y-4">
-                  {/* Tiêu đề */}
                   <div>
                     <label className="text-xs font-bold text-gray-700 block mb-1.5">
-                      Tiêu đề <span className="text-red-500">*</span>
+                      Tiêu đề *
                     </label>
                     <input
                       name="title"
@@ -153,32 +254,28 @@ const CreatePost = () => {
                       onChange={handleInputChange}
                       required
                       type="text"
-                      placeholder="VD: NGUYỄN VĂN A, Mình có đánh rơi điện thoại..."
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-indigo-400 transition-all outline-none"
+                      placeholder="VD: Rơi ví tại căn tin khu B..."
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-indigo-400 outline-none"
                     />
                   </div>
-
-                  {/* Nội dung */}
                   <div>
                     <label className="text-xs font-bold text-gray-700 block mb-1.5">
-                      Nội dung chi tiết <span className="text-red-500">*</span>
+                      Nội dung *
                     </label>
                     <textarea
                       name="description"
                       value={formData.description}
                       onChange={handleInputChange}
                       required
-                      rows="4"
-                      placeholder="Mô tả đặc điểm, thời gian, địa điểm chi tiết..."
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-indigo-400 transition-all outline-none resize-none"
+                      rows="3"
+                      placeholder="Mô tả chi tiết món đồ..."
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-indigo-400 outline-none resize-none"
                     />
                   </div>
-
-                  {/* Khu vực & Trường */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs font-bold text-gray-700 block mb-1.5">
-                        Khu vực <span className="text-red-500">*</span>
+                        Khu vực *
                       </label>
                       <input
                         name="location"
@@ -186,115 +283,66 @@ const CreatePost = () => {
                         onChange={handleInputChange}
                         required
                         type="text"
-                        placeholder="VD: KTX Khu A, Căn tin..."
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-indigo-400 transition-all outline-none"
+                        placeholder="VD: Giảng đường C..."
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-indigo-400 outline-none"
                       />
                     </div>
                     <div>
                       <label className="text-xs font-bold text-gray-700 block mb-1.5">
-                        Trường / Group
-                      </label>
-                      <select
-                        name="school"
-                        value={formData.school}
-                        onChange={handleInputChange}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-indigo-400 transition-all outline-none cursor-pointer"
-                      >
-                        <option value="">-- Chọn trường (nếu có) --</option>
-                        <option value="nlu">Nông Lâm</option>
-                        <option value="uit">Công nghệ thông tin</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Loại đồ & Liên hệ */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-bold text-gray-700 block mb-1.5">
-                        Loại đồ <span className="text-red-500">*</span>
+                        Loại đồ *
                       </label>
                       <select
                         name="category"
                         value={formData.category}
                         onChange={handleInputChange}
                         required
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-indigo-400 transition-all outline-none"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-indigo-400 outline-none"
                       >
-                        <option value="">-- Chọn loại đồ --</option>
-                        <option value="giay-to">Giấy tờ</option>
-                        <option value="dien-tu">Điện tử</option>
+                        <option value="">-- Chọn loại --</option>
+                        {CATEGORIES.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
                       </select>
                     </div>
-                    <div>
-                      <label className="text-xs font-bold text-gray-700 block mb-1.5">
-                        SĐT hoặc Link Facebook{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        name="contact"
-                        value={formData.contact}
-                        onChange={handleInputChange}
-                        required
-                        type="text"
-                        placeholder="VD: 090xxxxxxx hoặc fb.com/..."
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-indigo-400 transition-all outline-none"
-                      />
-                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 block mb-1.5">
+                      Thông tin liên hệ *
+                    </label>
+                    <input
+                      name="contact"
+                      value={formData.contact}
+                      onChange={handleInputChange}
+                      required
+                      type="text"
+                      placeholder="SĐT hoặc Facebook..."
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-indigo-400 outline-none"
+                    />
                   </div>
                 </div>
 
                 <button
+                  disabled={loading}
                   type="submit"
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] mt-6"
+                  className={`w-full ${loading ? "bg-gray-400" : "bg-indigo-600 hover:bg-indigo-700"} text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98] mt-4`}
                 >
-                  Đăng tin ngay
+                  {loading ? "Đang xử lý..." : "Đăng tin ngay"}
                 </button>
               </section>
             </form>
           )}
         </div>
 
-        {/* RIGHT COLUMN: SIDEBAR (LUÔN HIỂN THỊ) */}
+        {/* Sidebar */}
         <div className="space-y-6">
-          <div className="bg-red-50 p-6 rounded-2xl border border-red-100 shadow-sm">
-            <h3 className="text-red-700 font-bold text-base mb-4 tracking-tight">
-              Miễn trừ trách nhiệm
-            </h3>
-            <ul className="space-y-4 text-[12px] text-red-600/80 font-medium leading-relaxed">
-              <li className="flex gap-2">
-                <span>•</span> Cảnh giác với người nhận không cung cấp được
-                thông tin chi tiết.
-              </li>
-              <li className="flex gap-2">
-                <span>•</span> Không chuyển khoản bất kỳ khoản phí nào trước khi
-                nhận đồ.
-              </li>
-              <li className="flex gap-2">
-                <span>•</span> Nên gặp trực tiếp tại nơi công cộng đông người.
-              </li>
-              <li className="flex gap-2">
-                <span>•</span> Chúng tôi là nền tảng trung gian, không chịu
-                trách nhiệm tranh chấp.
-              </li>
-            </ul>
-          </div>
-
-          <div className="bg-green-50 p-6 rounded-2xl border border-green-100 shadow-sm">
-            <h3 className="text-green-700 font-bold text-base mb-4 tracking-tight">
-              Tips tăng tỷ lệ tìm thấy
-            </h3>
-            <ul className="space-y-4 text-[12px] text-green-600/80 font-medium leading-relaxed">
-              <li className="flex gap-2">
-                <span>•</span> Cung cấp đầy đủ thông tin (Tên giấy tờ,
-                Trường...).
-              </li>
-              <li className="flex gap-2">
-                <span>•</span> Mô tả chi tiết đặc điểm, thời gian, địa điểm.
-              </li>
-              <li className="flex gap-2">
-                <span>•</span> Thêm ảnh rõ nét đã che thông tin nhạy cảm.
-              </li>
-            </ul>
+          <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100">
+            <h3 className="text-amber-800 font-bold mb-3">💡 Mẹo đăng tin</h3>
+            <p className="text-[12px] text-amber-700 leading-relaxed">
+              Hãy chụp ảnh rõ nét và cung cấp thông tin liên hệ chính xác để
+              tăng khả năng tìm thấy đồ thất lạc của bạn nhé!
+            </p>
           </div>
         </div>
       </div>
